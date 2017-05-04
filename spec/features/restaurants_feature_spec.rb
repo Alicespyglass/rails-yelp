@@ -10,21 +10,16 @@ feature 'restaurants' do
     end
   end
 
-
   context 'restaurants have been added' do
-    before do
-      Restaurant.create(name: 'KFC')
-    end
-
     scenario 'display restaurants' do
-      visit '/restaurants'
+      sign_up
+      create_restaurant
       expect(page).to have_content('KFC')
       expect(page).not_to have_content('No restaurants yet')
     end
   end
 
   context 'creating restaurants' do
-
     scenario 'prompts user to fill out a form then displays the new restaurant' do
       sign_up
       click_link 'Add a restaurant'
@@ -50,25 +45,27 @@ feature 'restaurants' do
       click_link 'Add a restaurant'
       expect(current_path).to eq "/users/sign_in"
     end
-
   end
 
   context 'viewing restaurants' do
-    let!(:kfc) { Restaurant.create(name: 'KFC') }
-
-      scenario 'lets a user view a restaurant' do
-        visit '/restaurants'
+      scenario 'lets any user view a restaurant' do
+        sign_up
+        create_restaurant
+        click_link 'Sign out'
+        sign_up_second_user
         click_link 'KFC'
         expect(page).to have_content 'KFC'
-        expect(current_path).to eq "/restaurants/#{kfc.id}"
+        expect(current_path).to eq "/restaurants/#{Restaurant.last.id}"
       end
   end
 
   context 'editing restaurants' do
-    before { Restaurant.create name: 'KFC', description: 'Deep fried goodness', id: 1}
-
-    scenario 'let a user edit a restaurant' do
+    before {
       sign_up
+      create_restaurant
+    }
+
+    scenario 'let the owner edit a restaurant' do
       click_link 'Edit KFC'
       fill_in 'Name', with: 'Kentucky Fried Chicken'
       fill_in 'Description', with: 'Deep fried goodness'
@@ -76,20 +73,36 @@ feature 'restaurants' do
       click_link 'Kentucky Fried Chicken'
       expect(page).to have_content 'Kentucky Fried Chicken'
       expect(page).to have_content 'Deep fried goodness'
-      expect(current_path).to eq '/restaurants/1'
+      expect(current_path).to eq "/restaurants/#{Restaurant.last.id}"
+    end
+
+    scenario 'only if they created it' do
+      click_link 'Sign out'
+      sign_up_second_user
+      click_link 'Edit KFC'
+      expect(current_path).to eq '/restaurants'
+      expect(page).to have_content 'Only owner can edit restaurant'
     end
   end
 
   context 'deleting restaurants' do
-    before { Restaurant.create name: 'KFC', description: 'Deep fried goodness'}
+    before {
+      sign_up
+      create_restaurant
+    }
 
     scenario 'remove a restaurant when a user clicks a delete link' do
-      sign_up
       click_link 'Delete KFC'
       expect(page).not_to have_content 'KFC'
       expect(page).to have_content 'Restaurant deleted successfully'
     end
+
+    scenario 'only if they created it' do
+      click_link 'Sign out'
+      sign_up_second_user
+      click_link 'Delete KFC'
+      expect(current_path).to eq '/restaurants'
+      expect(page).to have_content 'Only owner can delete restaurant'
+    end
   end
-
-
 end
