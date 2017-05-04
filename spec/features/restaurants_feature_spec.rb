@@ -80,8 +80,8 @@ feature 'restaurants' do
       click_link 'Sign out'
       sign_up_second_user
       click_link 'Edit KFC'
-      expect(current_path).to eq '/restaurants'
-      expect(page).to have_content 'Only owner can edit restaurant'
+      expect(current_path).to eq '/'
+      expect(page).to have_content 'Only owner can make changes to this restaurant'
     end
   end
 
@@ -101,8 +101,8 @@ feature 'restaurants' do
       click_link 'Sign out'
       sign_up_second_user
       click_link 'Delete KFC'
-      expect(current_path).to eq '/restaurants'
-      expect(page).to have_content 'Only owner can delete restaurant'
+      expect(current_path).to eq '/'
+      expect(page).to have_content 'Only owner can make changes to this restaurant'
     end
   end
 end
